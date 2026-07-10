@@ -87,3 +87,21 @@ Ordine pratico con cui iniziare
 7.	implementa Isotonic Regression;
 8.	solo dopo ripeti tutto sul secondo dataset;
 9.	solo alla fine aggiungi Random Forest.
+
+CalibrationProject/
+│
+├── main.ipynb                ← notebook principale
+│
+├── calibration.py            ← Platt + Isotonic (implementati da zero)
+│
+├── metrics.py                ← Accuracy, Log-loss, Brier, Reliability Diagram
+│
+├── utils.py                  ← funzioni di supporto (se servono)
+│
+├── data/
+│   ├── breast_cancer.csv
+│   └── diabetes.csv
+│
+└── results/
+    ├── figures/
+    └── tables/
