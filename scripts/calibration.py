@@ -36,7 +36,7 @@ class PlattScaling:
         scores = np.asarray(scores, dtype=float)
         y = np.asarray(y)
 
-        targets = self._smooth_targets(y)
+        targets = self._smooth_targets(y) # with new value
 
         self.A = 0.0
         self.B = 0.0
