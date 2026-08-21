@@ -32,8 +32,8 @@ class PlattScaling:
             negative_target
         ) # new target value
 
-    def fit(self, scores, y): # important part
-        scores = np.asarray(scores, dtype=float)
+    def fit(self, scores, y): # important part --> learn the calibration
+        scores = np.asarray(scores, dtype=float) # NumPy
         y = np.asarray(y)
 
         targets = self._smooth_targets(y) # with new value
@@ -69,9 +69,93 @@ class PlattScaling:
 
         return self
 
-    def predict_proba(self, scores):
+    def predict_proba(self, scores): # application on test set
         scores = np.asarray(scores, dtype=float)
 
         linear_output = self.A * scores + self.B
 
         return self._sigmoid(linear_output)
+
+
+
+class IsotonicRegression:
+    def __init__(self):
+        self.thresholds = None # score
+        self.values = None # associated probabilities
+
+    def fit(self, scores, y): # learn the calibration
+        scores = np.asarray(scores, dtype=float) # NumPy
+        y = np.asarray(y, dtype=float)
+
+        order = np.argsort(scores)
+
+        scores_sorted = scores[order]
+        y_sorted = y[order]
+
+        blocks = []
+
+        for score, target in zip(scores_sorted, y_sorted):
+            blocks.append({
+                "min_score": score,
+                "max_score": score,
+                "sum_y": target,
+                "weight": 1
+            }) # for every osservation 
+
+        i = 0
+
+        while i < len(blocks) - 1: # comparison with next block for the monotonicity of score and probability
+
+            current_value = (blocks[i]["sum_y"] / blocks[i]["weight"])
+            next_value = (blocks[i + 1]["sum_y"] / blocks[i + 1]["weight"])
+
+            if current_value > next_value: # merge blocks if it not greater
+
+                merged_block = {
+                    "min_score": blocks[i]["min_score"],
+                    "max_score": blocks[i + 1]["max_score"],
+                    "sum_y": blocks[i]["sum_y"] + blocks[i + 1]["sum_y"],
+                    "weight":blocks[i]["weight"] + blocks[i + 1]["weight"]
+                }
+
+                blocks[i] = merged_block
+                del blocks[i + 1]
+
+                if i > 0:
+                    i -= 1
+
+            else:
+                i += 1
+
+        self.thresholds = []
+        self.values = []
+
+        for block in blocks:
+
+            self.thresholds.append(block["max_score"])
+            self.values.append(block["sum_y"] / block["weight"])
+
+        self.thresholds = np.asarray(self.thresholds)
+        self.values = np.asarray(self.values) # NumPy
+
+        return self # trained calibrator
+
+    def predict_proba(self, scores): # application on test set
+
+        scores = np.asarray(scores, dtype=float)
+        probabilities = np.empty(len(scores))
+
+        for i, score in enumerate(scores):
+
+            index = np.searchsorted(
+                self.thresholds,
+                score,
+                side="left"
+            )
+
+            if index >= len(self.values):
+                index = len(self.values) - 1
+
+            probabilities[i] = self.values[index]
+
+        return probabilities
