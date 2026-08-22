@@ -212,7 +212,7 @@ def compare_all_calibrations(
         y_prob_isotonic
     )
 
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(6, 6))
 
     plt.plot(
         [0, 1],
