@@ -1,3 +1,4 @@
+"""Visualization utilities for calibration analysis."""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,6 +10,7 @@ def plot_reliability_diagram(
     title,
     n_bins=10
 ):
+    """Plot a reliability diagram for predicted probabilities."""
     y_true = np.asarray(y_true)
     y_prob = np.asarray(y_prob)
 
@@ -81,6 +83,7 @@ def compare_reliability_diagrams(
     title="Reliability Diagram Comparison",
     n_bins=10
 ):
+    """Compare reliability diagrams before and after calibration."""
     y_true = np.asarray(y_true)
     y_prob_before = np.asarray(y_prob_before)
     y_prob_after = np.asarray(y_prob_after)
@@ -165,6 +168,7 @@ def compare_all_calibrations(
     title="Calibration Comparison",
     n_bins=5
 ):
+    """Compare uncalibrated, Platt-scaled, and isotonic probabilities."""
     y_true = np.asarray(y_true)
     y_prob_before = np.asarray(y_prob_before)
     y_prob_platt = np.asarray(y_prob_platt)
