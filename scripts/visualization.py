@@ -208,4 +208,3 @@ def compare_all_calibrations(
     plt.grid(alpha=0.3)
 
     plt.show()
-    
