@@ -1,6 +1,37 @@
 """Visualization utilities for calibration analysis."""
+
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+def _compute_reliability(y_true, y_prob, n_bins):
+    """Compute mean predicted probabilities and observed positive fractions."""
+    y_true = np.asarray(y_true)
+    y_prob = np.asarray(y_prob)
+
+    bin_edges = np.linspace(0, 1, n_bins + 1)
+
+    bin_ids = np.digitize(
+        y_prob,
+        bin_edges[1:-1]
+    )
+
+    mean_predicted_prob = []
+    fraction_of_positives = []
+
+    for i in range(n_bins):
+        mask = bin_ids == i
+
+        if np.sum(mask) > 0:
+            mean_predicted_prob.append(
+                np.mean(y_prob[mask])
+            )
+
+            fraction_of_positives.append(
+                np.mean(y_true[mask])
+            )
+
+    return mean_predicted_prob, fraction_of_positives
 
 
 def plot_reliability_diagram(
@@ -11,37 +42,13 @@ def plot_reliability_diagram(
     n_bins=10
 ):
     """Plot a reliability diagram for predicted probabilities."""
-    y_true = np.asarray(y_true)
-    y_prob = np.asarray(y_prob)
 
-    # Define probability bins
-    bin_edges = np.linspace(0, 1, n_bins + 1)
-
-    # Assign each probability to a bin
-    bin_ids = np.digitize(
+    mean_predicted_prob, fraction_of_positives = _compute_reliability(
+        y_true,
         y_prob,
-        bin_edges[1:-1]
+        n_bins
     )
 
-    mean_predicted_prob = []
-    fraction_of_positives = []
-
-    # Compute calibration values for each bin
-    for i in range(n_bins):
-
-        mask = bin_ids == i
-
-        if np.sum(mask) > 0:
-
-            mean_predicted_prob.append(
-                np.mean(y_prob[mask])
-            )
-
-            fraction_of_positives.append(
-                np.mean(y_true[mask])
-            )
-
-    # Plot
     plt.figure(figsize=(6, 6))
 
     # Perfect calibration line
@@ -73,7 +80,6 @@ def plot_reliability_diagram(
     plt.show()
 
 
-
 def compare_reliability_diagrams(
     y_true,
     y_prob_before,
@@ -84,46 +90,19 @@ def compare_reliability_diagrams(
     n_bins=10
 ):
     """Compare reliability diagrams before and after calibration."""
-    y_true = np.asarray(y_true)
-    y_prob_before = np.asarray(y_prob_before)
-    y_prob_after = np.asarray(y_prob_after)
 
-    bin_edges = np.linspace(0, 1, n_bins + 1)
-
-    def compute_reliability(y_prob):
-        bin_ids = np.digitize(
-            y_prob,
-            bin_edges[1:-1]
-        )
-
-        mean_predicted_prob = []
-        fraction_of_positives = []
-
-        for i in range(n_bins):
-            mask = bin_ids == i
-
-            if np.sum(mask) > 0:
-                mean_predicted_prob.append(
-                    np.mean(y_prob[mask])
-                )
-
-                fraction_of_positives.append(
-                    np.mean(y_true[mask])
-                )
-
-        return mean_predicted_prob, fraction_of_positives
-
-    # Before calibration
-    mean_before, frac_before = compute_reliability(
-        y_prob_before
+    mean_before, frac_before = _compute_reliability(
+        y_true,
+        y_prob_before,
+        n_bins
     )
 
-    # After calibration
-    mean_after, frac_after = compute_reliability(
-        y_prob_after
+    mean_after, frac_after = _compute_reliability(
+        y_true,
+        y_prob_after,
+        n_bins
     )
 
-    # Plot
     plt.figure(figsize=(6, 6))
 
     plt.plot(
@@ -169,51 +148,23 @@ def compare_all_calibrations(
     n_bins=5
 ):
     """Compare uncalibrated, Platt-scaled, and isotonic probabilities."""
-    y_true = np.asarray(y_true)
-    y_prob_before = np.asarray(y_prob_before)
-    y_prob_platt = np.asarray(y_prob_platt)
-    y_prob_isotonic = np.asarray(y_prob_isotonic)
 
-    bin_edges = np.linspace(0, 1, n_bins + 1)
-
-    # Compute the reliability curve for a set of probabilities
-    def compute_reliability(y_prob):
-
-        bin_ids = np.digitize(
-            y_prob,
-            bin_edges[1:-1]
-        )
-
-        mean_predicted_prob = []
-        fraction_of_positives = []
-
-        for i in range(n_bins):
-
-            mask = bin_ids == i
-
-            if np.sum(mask) > 0:
-
-                mean_predicted_prob.append(
-                    np.mean(y_prob[mask])
-                )
-
-                fraction_of_positives.append(
-                    np.mean(y_true[mask])
-                )
-
-        return (
-            mean_predicted_prob,
-            fraction_of_positives
-        )
-
-    mean_before, frac_before = compute_reliability(
-        y_prob_before
+    mean_before, frac_before = _compute_reliability(
+        y_true,
+        y_prob_before,
+        n_bins
     )
-    mean_platt, frac_platt = compute_reliability(
-        y_prob_platt
+
+    mean_platt, frac_platt = _compute_reliability(
+        y_true,
+        y_prob_platt,
+        n_bins
     )
-    mean_isotonic, frac_isotonic = compute_reliability(
-        y_prob_isotonic
+
+    mean_isotonic, frac_isotonic = _compute_reliability(
+        y_true,
+        y_prob_isotonic,
+        n_bins
     )
 
     plt.figure(figsize=(6, 6))
@@ -225,13 +176,29 @@ def compare_all_calibrations(
         label="Perfect calibration"
     )
 
-    plt.plot(mean_before, frac_before, marker="o", label="Before calibration")
-    plt.plot(mean_platt, frac_platt, marker="o", label="Platt Scaling")
-    plt.plot(mean_isotonic, frac_isotonic, marker="o", label="Isotonic Regression")
+    plt.plot(
+        mean_before,
+        frac_before,
+        marker="o",
+        label="Before calibration"
+    )
+
+    plt.plot(
+        mean_platt,
+        frac_platt,
+        marker="o",
+        label="Platt Scaling"
+    )
+
+    plt.plot(
+        mean_isotonic,
+        frac_isotonic,
+        marker="o",
+        label="Isotonic Regression"
+    )
 
     plt.xlabel("Mean Predicted Probability")
     plt.ylabel("Fraction of Positives")
-
     plt.title(title)
 
     plt.xlim(0, 1)
@@ -241,3 +208,4 @@ def compare_all_calibrations(
     plt.grid(alpha=0.3)
 
     plt.show()
+    
