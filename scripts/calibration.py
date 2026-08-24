@@ -98,14 +98,30 @@ class IsotonicRegression:
         scores_sorted = scores[order]
         y_sorted = y[order]
 
+        unique_scores, inverse = np.unique( # Group observations with identical scores
+            scores_sorted,
+            return_inverse=True
+        )
+
+        sum_y = np.zeros(len(unique_scores))
+        weights = np.zeros(len(unique_scores))
+
+        for i, group_index in enumerate(inverse):
+            sum_y[group_index] += y_sorted[i]
+            weights[group_index] += 1
+
         blocks = []
 
-        for score, target in zip(scores_sorted, y_sorted):
+        for score, target_sum, weight in zip(
+            unique_scores,
+            sum_y,
+            weights
+        ):
             blocks.append({
                 "min_score": score,
                 "max_score": score,
-                "sum_y": target,
-                "weight": 1
+                "sum_y": target_sum,
+                "weight": weight
             }) # for every osservation
 
         i = 0
@@ -133,16 +149,15 @@ class IsotonicRegression:
             else:
                 i += 1
 
-        self.thresholds = []
-        self.values = []
+        self.thresholds = np.asarray([
+            block["max_score"]
+            for block in blocks
+        ])
 
-        for block in blocks:
-
-            self.thresholds.append(block["max_score"])
-            self.values.append(block["sum_y"] / block["weight"])
-
-        self.thresholds = np.asarray(self.thresholds)
-        self.values = np.asarray(self.values) # NumPy
+        self.values = np.asarray([
+            block["sum_y"] / block["weight"]
+            for block in blocks
+        ])
 
         return self # trained calibrator
 
