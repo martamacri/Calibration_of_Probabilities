@@ -19,7 +19,7 @@ class PlattScaling:
         return 1.0 / (1.0 + np.exp(-z))
 
     @staticmethod
-    def _smooth_targets(y): # no 0,1 but other value --> no overfitting
+    def _smooth_targets(y): # Smooth binary targets to reduce overfitting
         y = np.asarray(y)
 
         n_positive = np.sum(y == 1)
@@ -131,7 +131,7 @@ class IsotonicRegression:
             current_value = blocks[i]["sum_y"] / blocks[i]["weight"]
             next_value = blocks[i + 1]["sum_y"] / blocks[i + 1]["weight"]
 
-            if current_value > next_value: # merge blocks if it not greater
+            if current_value > next_value: # Merge blocks if monotonicity is violated
 
                 merged_block = {
                     "min_score": blocks[i]["min_score"],
