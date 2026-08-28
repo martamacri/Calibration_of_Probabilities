@@ -47,8 +47,6 @@ Calibration_of_Probability/
 
 ## Data
 
-## Data
-
 Two real-world binary classification datasets are used to evaluate probability calibration under different data characteristics and levels of complexity.
 
 ### Breast Cancer Wisconsin
@@ -99,16 +97,14 @@ The workflow is organised into five main phases.
    - Logistic Regression → a simple and interpretable linear classifier
    - Random Forest → a more flexible ensemble classifier based on multiple decision trees
 
-   The original predicted probabilities are retained to evaluate the models before calibration.
-
 4. Probability Calibration
 
-   Two post-hoc calibration methods are implemented from scratch and fitted exclusively on the calibration set:
+   Two calibration methods are implemented from scratch and fitted exclusively on the calibration set:
 
    - Platt Scaling → learns a sigmoid transformation of the model scores. Its parametric form makes it relatively stable when the amount of calibration data is limited.
    - Isotonic Regression → learns a non-decreasing transformation of the model scores. It is more flexible and can capture complex forms of miscalibration, but it is also more susceptible to overfitting with small calibration sets.
 
-   Calibration modifies the probability estimates produced by the classifiers rather than retraining the original models.
+   Calibration try to modifies the probability estimates produced by the classifiers rather than retraining the original models.
 
 5. Evaluation and Calibration Analysis
 
@@ -120,42 +116,10 @@ The workflow is organised into five main phases.
 
    Reliability diagrams are also used to visually assess calibration. A well-calibrated classifier should produce a curve close to the diagonal, indicating agreement between predicted probabilities and observed frequencies.
 
-   The final comparison evaluates how Platt Scaling and Isotonic Regression affect Logistic Regression and Random Forest across both datasets.
-# Conclusion
+## Conclusion
 
+This project demonstrates the importance of evaluating probabilistic classifiers not only in terms of classification accuracy, but also according to the reliability of their probability estimates.
 
+The analysis shows that calibration can improve probability estimates without necessarily improving classification accuracy. Across the two datasets and classifiers, Platt Scaling provides the most consistent improvements in Log-loss and Brier score, offering stable probability corrections. Isotonic Regression, while more flexible, shows a greater tendency to overfit when the calibration set is limited, sometimes producing excessively confident probability estimates.
 
-
-## Tasks
-
-
-
-Quindi:
-- prima della calibrazione, allenare i modelli e valutare
-- applicare platt ai modelli e valutare
-- applicare isotonic ai modelli e valutare
-- fai tabelle di comparazione
-
-I risultati mostrano che valutare solo l’accuracy non è sufficiente. Due modelli possono classificare in modo simile, ma avere probabilità molto diverse in termini di affidabilità. La calibrazione permette di correggere queste probabilità e rende il modello più utile in contesti in cui la probabilità prevista viene usata per prendere decisioni.
-
-Struttura report:
-1.	Introduzione: spieghi cos’è la calibrazione; spieghi perché non basta l’accuracy.
-2.	Riferimento teorico: paper di Niculescu-Mizil e Caruana; Platt Scaling; Isotonic Regression; reliability diagrams.
-3.	Dataset: descrizione dei due dataset; target; numero di osservazioni; preprocessing.
-4.	Metodologia: train/calibration/test split; Logistic Regression; Random Forest; metriche usate.
-5.	Risultati: tabelle metriche; reliability diagrams prima/dopo; confronto tra Platt e Isotonic.
-6.	Discussione: quale modello era più calibrato; quale calibrazione ha funzionato meglio; differenza tra accuracy e qualità delle probabilità.
-7.	Conclusione: calibrazione utile; non sempre migliora tutto; va valutata con metriche adatte.
-
-Ordine pratico con cui iniziare
-1.	carica un solo dataset;
-2.	fai train/calibration/test split;
-3.	implementa Logistic Regression da zero;
-4.	calcola accuracy, log-loss, Brier score;
-5.	fai reliability diagram;
-6.	implementa Platt Scaling;
-7.	implementa Isotonic Regression;
-8.	solo dopo ripeti tutto sul secondo dataset;
-9.	solo alla fine aggiungi Random Forest.
-
-
+Overall, the results highlight that good classification performance does not automatically imply well-calibrated probabilities. Among the calibration approaches considered, Platt Scaling represents the most robust solution in these experiments, providing a good trade-off between calibration performance, stability and model complexity.
