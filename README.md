@@ -11,7 +11,8 @@ The paper by Niculescu-Mizil and Caruana addresses this gap by systematically st
 1. [Introduction](#introduction)
 2. [Data](#data)
 3. [Project Structure](#project-structure)
-4. [Conclusion](#conclusion)
+4. [Installation](#installation)
+5. [Conclusion](#conclusion)
 
 ## Introduction
 
@@ -115,6 +116,16 @@ The workflow is organised into five main phases.
    - Brier score → squared difference between predicted probabilities and observed outcomes
 
    Reliability diagrams are also used to visually assess calibration. A well-calibrated classifier should produce a curve close to the diagonal, indicating agreement between predicted probabilities and observed frequencies.
+
+## Installation
+
+Install the required dependencies using:
+
+```bash
+pip install -r requirements.txt
+```
+
+The analyses can then be reproduced by running the notebooks contained in the `notebooks/` directory.
 
 ## Conclusion
 
