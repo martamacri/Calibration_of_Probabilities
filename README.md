@@ -1,8 +1,10 @@
-# Project_ML
+# Machine Learning Project: Calibration of Probabilities
 
-## Assignment 2 — Calibration of Probabilities
+## Project proposal: Assignment 2 
 The course develops supervised learning primarily through the lens of risk minimization, where models are trained to minimize a surrogate loss such as the logistic or hinge loss. In this framework, the output of a classifier is often interpreted as a score or a probability, and performance is typically evaluated in terms of classification accuracy or expected loss.
+
 However, in many applications it is not enough to predict the correct label; one also needs reliable probability estimates. A model is said to be calibrated if, among all predictions made with confidence 0.8, roughly 80% are correct. Standard learning algorithms, even when optimized for log-loss, can produce poorly calibrated probabilities, especially when they are overconfident or when the model class is misspecified. For more information, refer to this blog post.
+
 The paper by Niculescu-Mizil and Caruana addresses this gap by systematically studying calibration and proposing simple post-processing methods to improve it. This extends the course material by shifting the focus from prediction accuracy to the quality of uncertainty estimates, and by showing how risk minimization alone does not guarantee well-calibrated outputs. It provides a concrete bridge between theoretical loss functions and practical evaluation metrics.
 
 Apprendimento supervisionato per minimizzare il rischio --> l'output della classificazione è una percentuale (valutate in termini di accuratezza di classificazione)
@@ -88,20 +90,20 @@ Ordine pratico con cui iniziare
 8.	solo dopo ripeti tutto sul secondo dataset;
 9.	solo alla fine aggiungi Random Forest.
 
-CalibrationProject/
+Calibration_of_Probability/
 │
-├── main.ipynb                ← notebook principale
+├── README.md
+├── requirements.txt
+├── .gitignore
 │
-├── calibration.py            ← Platt + Isotonic (implementati da zero)
+├── notebooks/
+│   ├── breast_cancer_analysis_01.ipynb
+│   └── diabetes_analysis_02.ipynb
 │
-├── metrics.py                ← Accuracy, Log-loss, Brier, Reliability Diagram
+├── scripts/
+│   ├── __init__.py
+│   ├── calibration.py
+│   └── visualization.py
 │
-├── utils.py                  ← funzioni di supporto (se servono)
-│
-├── data/
-│   ├── breast_cancer.csv
-│   └── diabetes.csv
-│
-└── results/
-    ├── figures/
-    └── tables/
+└── presentation/
+    └── probability_calibration_report.pdf
