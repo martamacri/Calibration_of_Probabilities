@@ -7,60 +7,128 @@ However, in many applications it is not enough to predict the correct label; one
 
 The paper by Niculescu-Mizil and Caruana addresses this gap by systematically studying calibration and proposing simple post-processing methods to improve it. This extends the course material by shifting the focus from prediction accuracy to the quality of uncertainty estimates, and by showing how risk minimization alone does not guarantee well-calibrated outputs. It provides a concrete bridge between theoretical loss functions and practical evaluation metrics.
 
-Apprendimento supervisionato per minimizzare il rischio --> l'output della classificazione è una percentuale (valutate in termini di accuratezza di classificazione)
-Servono stime di probabilità affidabili --> modello calibrato se le previsioni risultano corrette all'80%
-la sola minimizzazione del rischio non garantisca risultati ben calibrati
+## Index
+1. [Introduction](#introduction)
+2. [Data](#data)
+3. [Project Structure](#project-structure)
+4. [Conclusion](#conclusion)
 
-## Objective
-Evaluate and improve the calibration of probabilistic classifiers
+## Introduction
 
-Questo assignment non vuole solo vedere se un modello classifica bene, ma se le sue probabilità sono affidabili.
+Supervised learning algorithms are typically trained to minimize a prediction risk and are often evaluated in terms of classification accuracy. However, in many applications, correctly predicting the class is not sufficient: reliable estimates of the associated probabilities are also important.
 
-Se il modello dice “questa osservazione è positiva con probabilità 80%”, allora, tra tutti i casi in cui dice 80%, dovrebbe avere ragione circa l’80% delle volte. Questa è l’idea di calibration: le probabilità stimate devono corrispondere alla realtà osservata.
+A probabilistic classifier is considered well calibrated when its predicted probabilities reflect the observed frequencies. For example, among observations assigned a probability of 80% to the positive class, approximately 80% should actually belong to that class.
 
-Bisogna mostrare che un modello può avere una buona accuracy ma dare probabilità sbagliate.
-Non basta predire la classe giusta: bisogna anche capire se il modello è affidabile quando dice “sono sicuro al 70%, 80%, 90%.
+Importantly, minimizing classification risk does not guarantee well-calibrated probability estimates. A model may therefore achieve good classification accuracy while still producing unreliable confidence estimates.
 
-## Dataset
-Two real-world classification datasets:
+The aim of this project is to evaluate and improve the calibration of probabilistic classifiers, investigating not only whether a model predicts the correct class, but also whether its predicted probabilities provide an accurate representation of its confidence.
 
-- load_breast_cancer in scikit-learn --> più semplice quindi puoi iniziare da questo che sarà più calibrato
-  (from sklearn.datasets import load_breast_cancer
-  cancer = load_breast_cancer() )
-- fetch_openml in scikit-learn --> più complicato quindi calibrazione interessante
-  (from sklearn.datasets import fetch_openml
-  diabetes = fetch_openml(name='diabetes', version=1, as_frame=True) )
+Organisation of the project:
+```
+Calibration_of_Probability/
+│
+├── README.md
+├── requirements.txt
+├── .gitignore
+│
+├── notebooks/
+│   ├── breast_cancer_analysis_01.ipynb
+│   └── diabetes_analysis_02.ipynb
+│
+├── scripts/
+│   ├── __init__.py
+│   ├── calibration.py
+│   └── visualization.py
+│
+└── presentation/
+    └── probability_calibration_report.pdf
+
+```
+
+## Data
+
+## Data
+
+Two real-world binary classification datasets are used to evaluate probability calibration under different data characteristics and levels of complexity.
+
+### Breast Cancer Wisconsin
+
+Dataset source: `load_breast_cancer` from scikit-learn.
+
+The Breast Cancer Wisconsin dataset contains 569 observations described by 30 numerical features computed from digitized images of breast masses. The target distinguishes between malignant and benign tumors.
+
+This dataset represents the simpler classification problem considered in the project and provides a useful starting point for studying probability calibration.
+
+### Diabetes
+
+Dataset source: `fetch_openml` from scikit-learn (`diabetes`, version 1).
+
+The Diabetes dataset contains 768 observations described by 8 numerical features related to clinical and demographic characteristics. The target indicates whether an individual tested positive or negative for diabetes.
+
+Compared with the Breast Cancer dataset, this dataset presents a more challenging classification problem. These characteristics make the dataset particularly useful for investigating how calibration methods behave in a more complex setting.
+
+## Project Structure
+
+The workflow is organised into five main phases.
+
+1. Data Preparation
+
+   Each dataset is first explored and prepared for the classification task.
+
+   The main preprocessing steps include:
+
+   - exploratory analysis of the variables and target distribution
+   - identification of missing or implausible values
+   - MICE-style iterative imputation for the Diabetes dataset
+   - feature standardization for Logistic Regression
+
+2. Data Splitting
+
+   Each dataset is divided into three independent subsets:
+
+   - Training set (50%) → used to train the original classifiers
+   - Calibration set (30%) → used exclusively to fit the calibration methods
+   - Test set (20%) → used only for the final evaluation
+
+   The use of a separate calibration set prevents the calibration methods from being fitted on the same observations used to train the original classifier, reducing the risk of biased probability estimates.
+
+3. Classification Models
+
+   Two probabilistic classifiers are trained on the training set:
+
+   - Logistic Regression → a simple and interpretable linear classifier
+   - Random Forest → a more flexible ensemble classifier based on multiple decision trees
+
+   The original predicted probabilities are retained to evaluate the models before calibration.
+
+4. Probability Calibration
+
+   Two post-hoc calibration methods are implemented from scratch and fitted exclusively on the calibration set:
+
+   - Platt Scaling → learns a sigmoid transformation of the model scores. Its parametric form makes it relatively stable when the amount of calibration data is limited.
+   - Isotonic Regression → learns a non-decreasing transformation of the model scores. It is more flexible and can capture complex forms of miscalibration, but it is also more susceptible to overfitting with small calibration sets.
+
+   Calibration modifies the probability estimates produced by the classifiers rather than retraining the original models.
+
+5. Evaluation and Calibration Analysis
+
+   The original and calibrated models are evaluated on the independent test set using:
+
+   - Accuracy → proportion of correctly classified observations
+   - Log-loss → quality of the predicted probabilities, with a strong penalty for confident incorrect predictions
+   - Brier score → squared difference between predicted probabilities and observed outcomes
+
+   Reliability diagrams are also used to visually assess calibration. A well-calibrated classifier should produce a curve close to the diagonal, indicating agreement between predicted probabilities and observed frequencies.
+
+   The final comparison evaluates how Platt Scaling and Isotonic Regression affect Logistic Regression and Random Forest across both datasets.
+# Conclusion
+
+
+
 
 ## Tasks
 
-### Train: --> allenare 2 modelli
-- Logistic Regression --> modello base più interpretabile e lineare
-- Random Forest --> modello più flessibile, composto da tanti alberi decisionali
 
-Conviene dividere i dati in tre parti:
-- Train set: Serve per allenare il modello iniziale → alleni Logistic Regression e Random Forest
-- Calibration set: Serve per imparare la correzione delle probabilità → applichi Platt scaling e isotonic regression
-- Test set: Serve solo alla fine, per valutare tutto in modo corretto → confronti risultati finali
-
-Questo è importante perché il paper dice che usare lo stesso dataset sia per allenare il modello sia per calibrarlo può introdurre bias; per questo serve un set indipendente di calibrazione --> Calibrare significa prendere le probabilità grezze del modello e modificarle per renderle più realistiche
-Quindi la calibrazione non cambia necessariamente la classe predetta, ma corregge la fiducia del modello
-
-### Apply: --> metodi di calibrazione
-- Platt scaling: Prende gli output del modello e li passa dentro una funzione sigmoidale --> più stabile con pochi dati e meno flessibile --> meglio se ho pochi dati
-- Isotonic regression: Cerca solo una trasformazione crescente: se un caso aveva probabilità più alta di un altro prima, deve rimanere più alta anche dopo --> più flessibile e corregge distorsioni più complesse ma ha più rischio di overfitting se il calibration set è piccolo --> meglio se ho tanti dati
-
-### Evaluate: --> confrontare i modelli prima e dopo la calibrazione usando tre metriche
-- Accuracy: Misura quante classi vengono predette correttamente ma l’accuracy non dice se le probabilità sono buone
-- Log-loss: Misura quanto sono buone le probabilità
-- Brier score: misura la distanza tra probabilità prevista e risultato reale
-
-### Plot:
-- Reliability diagrams: Serve a vedere visivamente se il modello è calibrato, Se il modello è ben calibrato, i punti stanno vicino alla diagonale
-
-## Expected Output
-- Calibration curves before and after correction
-- Quantitative comparison of metrics
-- Discussion of miscalibration
 
 Quindi:
 - prima della calibrazione, allenare i modelli e valutare
@@ -90,20 +158,4 @@ Ordine pratico con cui iniziare
 8.	solo dopo ripeti tutto sul secondo dataset;
 9.	solo alla fine aggiungi Random Forest.
 
-Calibration_of_Probability/
-│
-├── README.md
-├── requirements.txt
-├── .gitignore
-│
-├── notebooks/
-│   ├── breast_cancer_analysis_01.ipynb
-│   └── diabetes_analysis_02.ipynb
-│
-├── scripts/
-│   ├── __init__.py
-│   ├── calibration.py
-│   └── visualization.py
-│
-└── presentation/
-    └── probability_calibration_report.pdf
+
